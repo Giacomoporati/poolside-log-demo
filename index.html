@@ -1,0 +1,533 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Poolside Log – Demo</title>
+<meta name="description" content="Demo of Poolside Log, a phone-first pool water test log. Fictitious student project with sample data.">
+<style>
+:root{
+  --bg:#f3f7fa; --card:#ffffff; --ink:#0f2433; --muted:#5b7183; --line:#dbe5ec;
+  --brand:#0b6e99; --brand-ink:#ffffff; --ok:#1f8a4c; --ok-bg:#e5f5ec;
+  --warn:#b26a00; --warn-bg:#fff3dc; --bad:#c0352b; --bad-bg:#fde8e6;
+  --radius:14px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+button,input,select,textarea{font:inherit;color:inherit}
+.sample-bar{background:#fff3dc;color:#5c3b00;text-align:center;font-size:13px;padding:6px 12px;border-bottom:1px solid #f0d9a8}
+header{background:var(--brand);color:#fff;padding:14px 16px 12px}
+header .row{display:flex;align-items:center;justify-content:space-between;gap:8px;max-width:640px;margin:0 auto}
+header h1{font-size:19px;margin:0}
+header a{color:#d8f0fb;font-size:14px}
+main{max-width:640px;margin:0 auto;padding:16px 16px 110px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-bottom:14px}
+h2{font-size:18px;margin:0 0 10px}
+h3{font-size:16px;margin:0 0 6px}
+.muted{color:var(--muted);font-size:14px}
+.pool-status{display:flex;gap:12px;align-items:flex-start}
+.dot{width:14px;height:14px;border-radius:50%;margin-top:4px;flex:none}
+.dot.ok{background:var(--ok)} .dot.warn{background:var(--warn)} .dot.bad{background:var(--bad)}
+.status-line{font-weight:700;font-size:17px}
+.status-line.ok{color:var(--ok)} .status-line.warn{color:var(--warn)} .status-line.bad{color:var(--bad)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip{font-size:13px;padding:3px 9px;border-radius:999px;background:#eef3f7;border:1px solid var(--line)}
+.chip.ok{background:var(--ok-bg);border-color:#bfe5cf;color:#155c33}
+.chip.bad{background:var(--bad-bg);border-color:#f4c1bc;color:#8e221a}
+.chip.warn{background:var(--warn-bg);border-color:#f0d9a8;color:#6e4300}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:48px;padding:0 18px;border-radius:12px;border:1px solid var(--line);background:#fff;font-weight:600;cursor:pointer}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+.btn.block{width:100%}
+.btn.small{min-height:38px;padding:0 12px;font-size:14px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.seg button{min-height:48px;border-radius:12px;border:2px solid var(--line);background:#fff;font-weight:600}
+.seg button[aria-pressed="true"]{border-color:var(--brand);background:#e3f2f9;color:#08506f}
+label.f{display:block;font-weight:600;font-size:15px;margin:12px 0 4px}
+label.f small{font-weight:400;color:var(--muted)}
+.inp{width:100%;min-height:52px;font-size:20px;padding:8px 12px;border:2px solid var(--line);border-radius:12px;background:#fff}
+.inp:focus{outline:none;border-color:var(--brand)}
+.inp.bad{border-color:var(--bad);background:#fffafa}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+textarea.inp{font-size:16px;min-height:80px}
+.live{margin-top:14px;padding:12px;border-radius:12px;font-weight:600}
+.live.ok{background:var(--ok-bg);color:#155c33}
+.live.bad{background:var(--bad-bg);color:#8e221a}
+.live.idle{background:#eef3f7;color:var(--muted);font-weight:500}
+.rec{border-top:1px solid var(--line);padding:12px 0}
+.rec:first-child{border-top:none;padding-top:0}
+.rec .top{display:flex;justify-content:space-between;gap:8px;font-weight:600}
+.action{font-size:14px;margin-top:6px;padding:8px 10px;border-left:3px solid var(--brand);background:#f1f8fc;border-radius:0 8px 8px 0}
+.missing{font-size:14px;margin-top:6px;color:var(--bad);font-weight:600}
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.filters select{min-height:44px;border-radius:10px;border:1px solid var(--line);padding:0 10px;background:#fff}
+.toggle{display:flex;align-items:center;gap:8px;font-size:15px}
+.toggle input{width:22px;height:22px}
+nav.tabs{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);padding:6px 8px calc(6px + env(safe-area-inset-bottom));display:flex;justify-content:center}
+nav.tabs .in{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;width:100%;max-width:640px}
+nav.tabs button{min-height:54px;border:none;background:none;border-radius:10px;font-size:13px;font-weight:600;color:var(--muted);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+nav.tabs button .ic{font-size:20px;line-height:1}
+nav.tabs button[aria-selected="true"]{color:var(--brand);background:#e3f2f9}
+.view[hidden]{display:none}
+.toast{position:fixed;left:50%;bottom:86px;transform:translateX(-50%);background:#0f2433;color:#fff;padding:10px 16px;border-radius:10px;font-size:15px;opacity:0;transition:opacity .2s;pointer-events:none;max-width:90vw;text-align:center}
+.toast.show{opacity:1}
+.addnote{margin-top:8px}
+.addnote textarea{width:100%;min-height:60px;border:2px solid var(--line);border-radius:10px;padding:8px}
+.sugg{margin-top:14px;padding:12px;border:1px solid #bfe0ef;background:#f1f8fc;border-radius:12px}
+.sugg h4{margin:0 0 4px;font-size:15px}
+.sugg .src{font-size:12px;color:var(--muted);margin-bottom:8px}
+.sugg button{display:block;width:100%;text-align:left;min-height:44px;margin-top:6px;padding:8px 12px;border:1px solid #bfe0ef;border-radius:10px;background:#fff;font-size:15px;cursor:pointer}
+.sugg button.used{background:var(--ok-bg);border-color:#bfe5cf;color:#155c33}
+.sugg button .p{font-weight:700;color:var(--brand)}
+.sugg button.used .p{color:var(--ok)}
+.kv{display:grid;grid-template-columns:1fr auto;gap:6px 12px;font-size:15px}
+@media (min-width:560px){ .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px} }
+</style>
+</head>
+<body>
+<div class="sample-bar">Fictitious student project · All records are <strong>SAMPLE DATA</strong></div>
+<header>
+  <div class="row">
+    <h1>🧪 Poolside Log</h1>
+    <a href="../poolside-log/">← About</a>
+  </div>
+</header>
+
+<main>
+  <!-- TODAY -->
+  <section class="view" id="v-today">
+    <div class="card" style="background:#e3f2f9;border-color:#bfe0ef">
+      <strong>Demo pool:</strong> “Riverside Community Pool” (fictitious). Two pools, tests due every <span class="interval-txt">2 hours</span>.
+    </div>
+    <div id="pool-cards"></div>
+    <button class="btn primary block" onclick="go('log')">+ Log a water test</button>
+  </section>
+
+  <!-- LOG -->
+  <section class="view" id="v-log" hidden>
+    <div class="card">
+      <h2>Log a water test</h2>
+      <div class="seg" role="group" aria-label="Pool">
+        <button type="button" data-pool="main" aria-pressed="true">Main pool</button>
+        <button type="button" data-pool="learner" aria-pressed="false">Learner pool</button>
+      </div>
+      <div class="grid2">
+        <div>
+          <label class="f" for="fc">Free chlorine <small>mg/l</small></label>
+          <input class="inp" id="fc" inputmode="decimal" placeholder="e.g. 1.6">
+        </div>
+        <div>
+          <label class="f" for="tc">Total chlorine <small>mg/l</small></label>
+          <input class="inp" id="tc" inputmode="decimal" placeholder="e.g. 1.9">
+        </div>
+        <div>
+          <label class="f" for="ph">pH</label>
+          <input class="inp" id="ph" inputmode="decimal" placeholder="e.g. 7.4">
+        </div>
+        <div>
+          <label class="f" for="temp">Water temp <small>°C</small></label>
+          <input class="inp" id="temp" inputmode="decimal" placeholder="e.g. 29">
+        </div>
+      </div>
+      <label class="f" for="clarity">Water clarity</label>
+      <select class="inp" id="clarity">
+        <option value="clear">Clear – main drain visible</option>
+        <option value="hazy">Hazy</option>
+        <option value="cloudy">Cloudy – drain not visible</option>
+      </select>
+      <label class="f" for="by">Your initials</label>
+      <input class="inp" id="by" maxlength="4" autocomplete="off" placeholder="e.g. JD" style="text-transform:uppercase">
+
+      <div id="live" class="live idle">Enter readings – the result is checked as you type.</div>
+
+      <div id="action-wrap" hidden>
+        <div class="sugg" id="sugg"></div>
+        <label class="f" for="action">What did you do about it? <small>(required when out of range)</small></label>
+        <textarea class="inp" id="action" placeholder="e.g. Increased dosing pump, retest in 30 min, informed duty manager"></textarea>
+      </div>
+
+      <button class="btn primary block" id="save" style="margin-top:14px">Save test</button>
+    </div>
+  </section>
+
+  <!-- HISTORY -->
+  <section class="view" id="v-history" hidden>
+    <div class="card">
+      <h2>Test history</h2>
+      <div class="filters">
+        <select id="f-pool" aria-label="Filter by pool">
+          <option value="all">Both pools</option>
+          <option value="main">Main pool</option>
+          <option value="learner">Learner pool</option>
+        </select>
+        <label class="toggle"><input type="checkbox" id="f-bad"> Problems only</label>
+      </div>
+      <div id="hist-summary" class="muted" style="margin-bottom:10px"></div>
+      <div id="hist"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
+        <button class="btn small" id="export">⬇ Export CSV (for inspection)</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- SETTINGS -->
+  <section class="view" id="v-settings" hidden>
+    <div class="card">
+      <h2>Pool settings</h2>
+      <p class="muted">These target ranges are <strong>example values for the demo</strong>. A real pool would enter the ranges from its own pool operating procedure.</p>
+      <div class="grid2">
+        <div><label class="f" for="s-fcmin">Free chlorine min</label><input class="inp" id="s-fcmin" inputmode="decimal"></div>
+        <div><label class="f" for="s-fcmax">Free chlorine max</label><input class="inp" id="s-fcmax" inputmode="decimal"></div>
+        <div><label class="f" for="s-phmin">pH min</label><input class="inp" id="s-phmin" inputmode="decimal"></div>
+        <div><label class="f" for="s-phmax">pH max</label><input class="inp" id="s-phmax" inputmode="decimal"></div>
+        <div><label class="f" for="s-cc">Combined chlorine max</label><input class="inp" id="s-cc" inputmode="decimal"></div>
+        <div><label class="f" for="s-int">Test every (minutes)</label><input class="inp" id="s-int" inputmode="numeric"></div>
+      </div>
+      <p class="muted">Combined chlorine is worked out for you (total − free) and must also stay at or below half the free chlorine.</p>
+      <button class="btn primary block" id="s-save">Save settings</button>
+    </div>
+    <div class="card">
+      <h3>Demo data</h3>
+      <p class="muted">Your tests and settings are saved on this device and stay after a refresh. Reset to start again with fresh sample data.</p>
+      <button class="btn block" id="reset">↺ Reset sample data</button>
+    </div>
+  </section>
+</main>
+
+<nav class="tabs" role="tablist">
+  <div class="in">
+    <button role="tab" data-view="today" aria-selected="true"><span class="ic">◉</span>Today</button>
+    <button role="tab" data-view="log" aria-selected="false"><span class="ic">＋</span>Log test</button>
+    <button role="tab" data-view="history" aria-selected="false"><span class="ic">☰</span>History</button>
+    <button role="tab" data-view="settings" aria-selected="false"><span class="ic">⚙</span>Settings</button>
+  </div>
+</nav>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  var KEY_R = 'poolsideLog.records.v1', KEY_S = 'poolsideLog.settings.v1';
+  var POOLS = { main: 'Main pool', learner: 'Learner pool' };
+  var DEFAULTS = { fcMin: 1.0, fcMax: 3.0, phMin: 7.2, phMax: 7.6, ccMax: 1.0, interval: 120 };
+  var store = {
+    get: function(k){ try { return JSON.parse(localStorage.getItem(k)); } catch(e){ return null; } },
+    set: function(k,v){ try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch(e){ return false; } }
+  };
+
+  var MIN = 60000;
+  function sampleRecords(){
+    var now = Date.now();
+    function r(pool, minsAgo, fc, tc, ph, temp, clarity, by, action){
+      return { id: 's' + Math.random().toString(36).slice(2,9), pool: pool, ts: now - minsAgo*MIN,
+               fc: fc, tc: tc, ph: ph, temp: temp, clarity: clarity, by: by, action: action || '', sample: true };
+    }
+    return [
+      // Main pool – tested regularly, last test 45 min ago
+      r('main',  45, 1.6, 1.9, 7.4, 29, 'clear', 'AB'),
+      r('main', 165, 1.4, 1.8, 7.5, 29, 'clear', 'CD'),
+      r('main', 285, 0.8, 1.2, 7.5, 29, 'clear', 'CD', 'Free chlorine low after busy school session. Raised dosing pump setting, retested at 30 min: 1.3.'),
+      r('main', 405, 1.7, 2.0, 7.3, 28, 'clear', 'EF'),
+      r('main', 525, 1.9, 2.2, 7.4, 28, 'clear', 'EF'),
+      r('main', 1440+60, 1.5, 1.8, 7.8, 29, 'clear', 'GH'),
+      r('main', 1440+180, 1.6, 1.9, 7.4, 29, 'clear', 'GH'),
+      // Learner pool – last test 2h50m ago, so it shows as overdue
+      r('learner', 170, 2.1, 2.4, 7.4, 31, 'clear', 'AB'),
+      r('learner', 290, 2.0, 3.4, 7.4, 31, 'hazy', 'CD', 'Combined chlorine high and water hazy. Increased fresh water dilution, informed duty manager.'),
+      r('learner', 410, 2.2, 2.5, 7.5, 31, 'clear', 'EF'),
+      r('learner', 1440+90, 1.9, 2.2, 7.3, 30, 'clear', 'GH'),
+      r('learner', 1440+210, 3.6, 3.9, 7.4, 30, 'clear', 'GH')
+    ];
+  }
+
+  var S = Object.assign({}, DEFAULTS, store.get(KEY_S) || {});
+  var R = store.get(KEY_R);
+  if (!Array.isArray(R)) { R = sampleRecords(); store.set(KEY_R, R); }
+
+  // ---------- rules ----------
+  function num(v){ if (v === '' || v == null) return NaN; return parseFloat(String(v).replace(',', '.')); }
+  function cc(rec){ return Math.max(0, Math.round((rec.tc - rec.fc) * 100) / 100); }
+  function issues(rec){
+    var out = [];
+    if (!isNaN(rec.fc)) {
+      if (rec.fc < S.fcMin) out.push('Free chlorine low (' + rec.fc + ' < ' + S.fcMin + ')');
+      if (rec.fc > S.fcMax) out.push('Free chlorine high (' + rec.fc + ' > ' + S.fcMax + ')');
+    }
+    if (!isNaN(rec.ph)) {
+      if (rec.ph < S.phMin) out.push('pH low (' + rec.ph + ' < ' + S.phMin + ')');
+      if (rec.ph > S.phMax) out.push('pH high (' + rec.ph + ' > ' + S.phMax + ')');
+    }
+    if (!isNaN(rec.fc) && !isNaN(rec.tc)) {
+      if (rec.tc < rec.fc) out.push('Total chlorine cannot be lower than free chlorine – retest');
+      else {
+        var c = cc(rec);
+        if (c > S.ccMax) out.push('Combined chlorine high (' + c + ' > ' + S.ccMax + ')');
+        else if (c > rec.fc / 2) out.push('Combined chlorine above half of free chlorine (' + c + ')');
+      }
+    }
+    if (rec.clarity && rec.clarity !== 'clear') out.push('Water ' + rec.clarity);
+    return out;
+  }
+
+  // ---------- suggested actions (EXAMPLE pool operating procedure) ----------
+  var PROC = {
+    fcLow:  ['Check the chlorine dosing pump is running and the chemical tank is not empty',
+             'Increase chlorine dosing as set out in the pool operating procedure',
+             'Retest in 30 minutes',
+             'Tell the duty manager / pool plant operator'],
+    fcVeryLow: ['Free chlorine far below minimum: clear the pool and follow the pool closure procedure'],
+    fcHigh: ['Check the dosing pump is not stuck on and reduce dosing as per procedure',
+             'Retest in 30 minutes',
+             'Tell the duty manager / pool plant operator'],
+    fcVeryHigh: ['Free chlorine far above maximum: clear the pool and follow the pool closure procedure'],
+    phLow:  ['Check the acid / pH dosing is not overdosing and reduce as per procedure',
+             'Retest in 30 minutes'],
+    phHigh: ['Check the acid / pH correction tank and dosing pump',
+             'Adjust pH dosing as set out in the pool operating procedure',
+             'Retest in 30 minutes'],
+    ccHigh: ['Check bather load and remind swimmers to shower before swimming',
+             'Increase fresh water dilution / backwash as per procedure',
+             'Tell the pool plant operator'],
+    tcBad:  ['Total lower than free chlorine is impossible: repeat the test with fresh tablets'],
+    hazy:   ['Check filters and filter pressure; backwash if due',
+             'Retest and keep an eye on clarity'],
+    cloudy: ['Main drain not visible: clear the pool now and follow the closure procedure']
+  };
+  function suggestions(rec){
+    var out = [];
+    function add(list){ list.forEach(function(s){ if (out.indexOf(s) < 0) out.push(s); }); }
+    if (!isNaN(rec.fc)) {
+      if (rec.fc < S.fcMin) { if (rec.fc < S.fcMin / 2) add(PROC.fcVeryLow); add(PROC.fcLow); }
+      if (rec.fc > S.fcMax) { if (rec.fc > S.fcMax * 1.5) add(PROC.fcVeryHigh); add(PROC.fcHigh); }
+    }
+    if (!isNaN(rec.ph)) {
+      if (rec.ph < S.phMin) add(PROC.phLow);
+      if (rec.ph > S.phMax) add(PROC.phHigh);
+    }
+    if (!isNaN(rec.fc) && !isNaN(rec.tc)) {
+      if (rec.tc < rec.fc) add(PROC.tcBad);
+      else if (cc(rec) > S.ccMax || cc(rec) > rec.fc / 2) add(PROC.ccHigh);
+    }
+    if (rec.clarity === 'hazy') add(PROC.hazy);
+    if (rec.clarity === 'cloudy') add(PROC.cloudy);
+    return out;
+  }
+  function renderSugg(box, rec, ta){
+    var list = suggestions(rec);
+    if (!list.length) { box.innerHTML = ''; box.hidden = true; return; }
+    box.hidden = false;
+    box.innerHTML = '<h4>Suggested actions</h4><div class="src">From the pool operating procedure (example procedure for this demo) · tap to add to your note</div>' +
+      list.map(function(s){
+        var used = ta.value.indexOf(s) >= 0;
+        var urgent = /clear the pool/i.test(s) && !used;
+        return '<button type="button" class="' + (used ? 'used' : '') + '"' + (urgent ? ' style="border-color:#f4c1bc;background:#fde8e6;color:#8e221a;font-weight:600"' : '') + ' data-s="' + esc(s) + '"><span class="p">' + (used ? '✓ ' : '+ ') + '</span>' + esc(s) + '</button>';
+      }).join('');
+    box.querySelectorAll('button').forEach(function(b){
+      b.addEventListener('click', function(){
+        var s = b.getAttribute('data-s');
+        if (ta.value.indexOf(s) >= 0) return;
+        ta.value = (ta.value.trim() ? ta.value.trim().replace(/\.?$/, '. ') : '') + s + '.';
+        ta.dispatchEvent(new Event('input'));
+        renderSugg(box, rec, ta);
+      });
+    });
+  }
+
+  // ---------- helpers ----------
+  function $(id){ return document.getElementById(id); }
+  function esc(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function fmtTime(ts){ return new Date(ts).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); }
+  function fmtDay(ts){
+    var d = new Date(ts), t = new Date(); t.setHours(0,0,0,0);
+    var y = new Date(t); y.setDate(t.getDate()-1);
+    if (d >= t) return 'Today';
+    if (d >= y) return 'Yesterday';
+    return d.toLocaleDateString([], {weekday:'short', day:'numeric', month:'short'});
+  }
+  function dur(mins){
+    mins = Math.round(Math.abs(mins));
+    var h = Math.floor(mins/60), m = mins % 60;
+    return (h ? h + ' h ' : '') + m + ' min';
+  }
+  function toast(msg){ var t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(function(){ t.classList.remove('show'); }, 2600); }
+  function save(){ if (!store.set(KEY_R, R)) toast('Could not save on this device'); }
+  function sorted(){ return R.slice().sort(function(a,b){ return b.ts - a.ts; }); }
+
+  // ---------- today ----------
+  function renderToday(){
+    $('pool-cards').innerHTML = '';
+    document.querySelectorAll('.interval-txt').forEach(function(e){ e.textContent = dur(S.interval).replace(' 0 min',''); });
+    Object.keys(POOLS).forEach(function(p){
+      var recs = sorted().filter(function(r){ return r.pool === p; });
+      var last = recs[0];
+      var html = '<div class="card"><h3>' + POOLS[p] + '</h3>';
+      if (!last) {
+        html += '<div class="pool-status"><span class="dot bad"></span><div><div class="status-line bad">No test recorded</div></div></div>';
+      } else {
+        var since = (Date.now() - last.ts) / MIN;
+        var due = S.interval - since;
+        var iss = issues(last);
+        var missing = R.filter(function(r){ return r.pool === p && issues(r).length && !r.action; }).length;
+        var cls, line;
+        if (due < 0) { cls = 'bad'; line = 'Test overdue by ' + dur(due); }
+        else if (iss.length) { cls = 'bad'; line = 'Last test out of range'; }
+        else if (due <= 20) { cls = 'warn'; line = 'Next test due in ' + dur(due); }
+        else { cls = 'ok'; line = 'OK · next test in ' + dur(due); }
+        html += '<div class="pool-status"><span class="dot ' + cls + '"></span><div style="flex:1">' +
+          '<div class="status-line ' + cls + '">' + line + '</div>' +
+          '<div class="muted">Last test ' + fmtTime(last.ts) + ' (' + fmtDay(last.ts).toLowerCase() + ') by ' + esc(last.by) + '</div>' +
+          '<div class="chips">' + chipsFor(last) + '</div>' +
+          (iss.length ? '<div class="missing" style="color:var(--bad)">' + iss.map(esc).join('<br>') + '</div>' : '') +
+          (missing ? '<div class="missing">⚠ ' + missing + ' out-of-range test' + (missing>1?'s':'') + ' with no action recorded</div>' : '') +
+          '</div></div>';
+      }
+      html += '</div>';
+      $('pool-cards').insertAdjacentHTML('beforeend', html);
+    });
+  }
+  function chipsFor(r){
+    var c = cc(r);
+    function chip(label, val, bad){ return '<span class="chip ' + (bad ? 'bad' : 'ok') + '">' + label + ' ' + val + '</span>'; }
+    return chip('FC', r.fc, r.fc < S.fcMin || r.fc > S.fcMax) +
+           chip('CC', c, r.tc < r.fc || c > S.ccMax || c > r.fc/2) +
+           chip('pH', r.ph, r.ph < S.phMin || r.ph > S.phMax) +
+           '<span class="chip">' + r.temp + '°C</span>' +
+           (r.clarity !== 'clear' ? '<span class="chip warn">' + esc(r.clarity) + '</span>' : '');
+  }
+
+  // ---------- log ----------
+  var curPool = 'main';
+  document.querySelectorAll('.seg button').forEach(function(b){
+    b.addEventListener('click', function(){
+      curPool = b.dataset.pool;
+      document.querySelectorAll('.seg button').forEach(function(x){ x.setAttribute('aria-pressed', x === b); });
+    });
+  });
+  function formRec(){
+    return { pool: curPool, fc: num($('fc').value), tc: num($('tc').value), ph: num($('ph').value),
+             temp: num($('temp').value), clarity: $('clarity').value, by: $('by').value.trim().toUpperCase(),
+             action: $('action').value.trim() };
+  }
+  function live(){
+    var f = formRec();
+    var iss = issues(f);
+    ['fc','tc','ph'].forEach(function(k){ $(k).classList.remove('bad'); });
+    if (!isNaN(f.fc) && (f.fc < S.fcMin || f.fc > S.fcMax)) $('fc').classList.add('bad');
+    if (!isNaN(f.ph) && (f.ph < S.phMin || f.ph > S.phMax)) $('ph').classList.add('bad');
+    if (!isNaN(f.fc) && !isNaN(f.tc) && (f.tc < f.fc || cc(f) > S.ccMax || cc(f) > f.fc/2)) $('tc').classList.add('bad');
+    var el = $('live');
+    var have = !isNaN(f.fc) || !isNaN(f.ph) || !isNaN(f.tc);
+    if (!have && f.clarity === 'clear') { el.className = 'live idle'; el.textContent = 'Enter readings – the result is checked as you type.'; }
+    else if (iss.length) { el.className = 'live bad'; el.innerHTML = '✕ Out of range:<br>' + iss.map(esc).join('<br>'); }
+    else {
+      var extra = (!isNaN(f.fc) && !isNaN(f.tc)) ? ' · combined chlorine ' + cc(f) : '';
+      el.className = 'live ok'; el.textContent = '✓ Within range' + extra;
+    }
+    $('action-wrap').hidden = !iss.length;
+    if (iss.length) renderSugg($('sugg'), f, $('action'));
+  }
+  ['fc','tc','ph','temp','clarity','by','action'].forEach(function(id){ $(id).addEventListener('input', live); });
+  $('clarity').addEventListener('change', live);
+
+  $('save').addEventListener('click', function(){
+    var f = formRec();
+    if (isNaN(f.fc) || isNaN(f.tc) || isNaN(f.ph) || isNaN(f.temp)) { toast('Please fill in all four readings'); return; }
+    if (f.fc < 0 || f.fc > 20 || f.tc < 0 || f.tc > 20 || f.ph < 0 || f.ph > 14 || f.temp < 0 || f.temp > 45) { toast('A reading looks impossible – please check it'); return; }
+    if (!f.by) { toast('Please add your initials'); $('by').focus(); return; }
+    var iss = issues(f);
+    if (iss.length && !f.action) { toast('Out of range – say what you did before saving'); $('action').focus(); return; }
+    f.id = 'u' + Date.now(); f.ts = Date.now(); f.sample = true;
+    R.push(f); save();
+    ['fc','tc','ph','temp','action'].forEach(function(id){ $(id).value = ''; });
+    $('clarity').value = 'clear';
+    live();
+    toast('Saved for ' + POOLS[f.pool] + (iss.length ? ' with action' : ''));
+    go('today');
+  });
+
+  // ---------- history ----------
+  function renderHistory(){
+    var fp = $('f-pool').value, fb = $('f-bad').checked;
+    var list = sorted().filter(function(r){
+      return (fp === 'all' || r.pool === fp) && (!fb || issues(r).length);
+    });
+    var probs = list.filter(function(r){ return issues(r).length; }).length;
+    $('hist-summary').textContent = list.length + ' tests shown · ' + probs + ' out of range';
+    if (!list.length) { $('hist').innerHTML = '<p class="muted">No tests match.</p>'; return; }
+    var html = '', day = '';
+    list.forEach(function(r){
+      var d = fmtDay(r.ts);
+      if (d !== day) { html += '<h3 style="margin:14px 0 6px">' + d + '</h3>'; day = d; }
+      var iss = issues(r);
+      html += '<div class="rec"><div class="top"><span>' + fmtTime(r.ts) + ' · ' + POOLS[r.pool] + '</span><span class="muted">' + esc(r.by) + '</span></div>' +
+        '<div class="chips">' + chipsFor(r) + '</div>';
+      if (iss.length && r.action) html += '<div class="action"><strong>Action:</strong> ' + esc(r.action) + '</div>';
+      if (iss.length && !r.action) html += '<div class="missing">⚠ Out of range – no action recorded</div>' +
+        '<div class="addnote"><button class="btn small" data-add="' + r.id + '">Add action note</button></div>';
+      html += '</div>';
+    });
+    $('hist').innerHTML = html;
+    $('hist').querySelectorAll('[data-add]').forEach(function(b){
+      b.addEventListener('click', function(){
+        var wrap = b.parentNode, id = b.dataset.add;
+        wrap.innerHTML = '<div class="sugg"></div><textarea placeholder="What was done about this reading?" style="margin-top:8px"></textarea><button class="btn small primary" style="margin-top:6px">Save note</button>';
+        var ta = wrap.querySelector('textarea');
+        var rec = R.filter(function(r){ return r.id === id; })[0];
+        if (rec) renderSugg(wrap.querySelector('.sugg'), rec, ta);
+        wrap.querySelector('button').addEventListener('click', function(){
+          var v = ta.value.trim(); if (!v) { toast('Write a short note first'); return; }
+          R.forEach(function(r){ if (r.id === id) r.action = v + ' (added later)'; });
+          save(); renderHistory(); toast('Action note saved');
+        });
+      });
+    });
+  }
+  $('f-pool').addEventListener('change', renderHistory);
+  $('f-bad').addEventListener('change', renderHistory);
+
+  $('export').addEventListener('click', function(){
+    var rows = [['SAMPLE DATA – Poolside Log demo export'], ['Date','Time','Pool','Free Cl','Total Cl','Combined Cl','pH','Temp C','Clarity','Initials','Result','Action']];
+    sorted().forEach(function(r){
+      var d = new Date(r.ts), iss = issues(r);
+      rows.push([d.toLocaleDateString(), fmtTime(r.ts), POOLS[r.pool], r.fc, r.tc, cc(r), r.ph, r.temp, r.clarity, r.by, iss.length ? iss.join('; ') : 'OK', r.action]);
+    });
+    var csv = rows.map(function(row){ return row.map(function(v){ v = String(v == null ? '' : v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g,'""') + '"' : v; }).join(','); }).join('\n');
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
+    a.download = 'poolside-log-sample.csv';
+    document.body.appendChild(a); a.click(); a.remove();
+  });
+
+  // ---------- settings ----------
+  var SF = { fcMin:'s-fcmin', fcMax:'s-fcmax', phMin:'s-phmin', phMax:'s-phmax', ccMax:'s-cc', interval:'s-int' };
+  function renderSettings(){ Object.keys(SF).forEach(function(k){ $(SF[k]).value = S[k]; }); }
+  $('s-save').addEventListener('click', function(){
+    var n = {};
+    for (var k in SF) { var v = num($(SF[k]).value); if (isNaN(v) || v < 0) { toast('Check the value for ' + $(SF[k]).previousElementSibling.textContent); return; } n[k] = v; }
+    if (n.fcMin >= n.fcMax || n.phMin >= n.phMax) { toast('Minimum must be lower than maximum'); return; }
+    if (n.interval < 15) { toast('Test interval must be at least 15 minutes'); return; }
+    S = n; store.set(KEY_S, S); toast('Settings saved – all results rechecked');
+  });
+  $('reset').addEventListener('click', function(){
+    if (!confirm('Delete your changes and reload fresh sample data?')) return;
+    R = sampleRecords(); S = Object.assign({}, DEFAULTS);
+    store.set(KEY_R, R); store.set(KEY_S, S); renderSettings(); toast('Sample data reset'); go('today');
+  });
+
+  // ---------- navigation ----------
+  var views = ['today','log','history','settings'];
+  function go(v){
+    views.forEach(function(x){ $('v-' + x).hidden = x !== v; });
+    document.querySelectorAll('nav.tabs button').forEach(function(b){ b.setAttribute('aria-selected', b.dataset.view === v); });
+    if (v === 'today') renderToday();
+    if (v === 'history') renderHistory();
+    if (v === 'settings') renderSettings();
+    window.scrollTo(0,0);
+  }
+  window.go = go;
+  document.querySelectorAll('nav.tabs button').forEach(function(b){ b.addEventListener('click', function(){ go(b.dataset.view); }); });
+  setInterval(function(){ if (!$('v-today').hidden) renderToday(); }, 30000);
+  go(location.hash === '#log' ? 'log' : 'today');
+})();
+</script>
+</body>
+</html>
